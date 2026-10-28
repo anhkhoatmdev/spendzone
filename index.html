@@ -73,6 +73,15 @@
         input[type="date"] {
             position: relative;
         }
+
+        /* Ẩn thanh cuộn cho Time Filter trên mobile */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="h-full text-slate-800 antialiased selection:bg-blue-500 selection:text-white flex flex-col md:flex-row min-h-screen bg-slate-50">
@@ -135,35 +144,52 @@
         
         <!-- Top Header Bar -->
         <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-10 px-4 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="md:hidden w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Logo (Chỉ hiện trên mobile) -->
+                <div class="md:hidden w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
                     <i class="fa-solid fa-wallet text-lg"></i>
                 </div>
-                <div>
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight" id="page-title">Tổng Quan Tài Chính</h2>
+                
+                <!-- Tên App & Slogan (Chỉ hiện trên mobile) -->
+                <div class="md:hidden flex flex-col justify-center">
+                    <h1 class="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-none mb-0.5">SpendZone</h1>
+                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-semibold leading-none">Quản lý chi tiêu cá nhân</p>
+                </div>
+
+                <!-- Tiêu đề trang (Chỉ hiện trên Desktop, vì Desktop đã có logo ở thanh bên trái) -->
+                <div class="hidden md:block">
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight" id="page-title">Tổng Quan Tài Chính</h2>
                 </div>
             </div>
 
             <!-- Header Right Controls: Time Filter & Google Sign-In -->
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- Chọn ngày cụ thể (Đồng bộ UI) -->
-                <div class="relative group flex items-center" title="Chọn ngày xem giao dịch">
-                    <!-- Icon FontAwesome custom -->
-                    <div class="absolute left-3 flex items-center pointer-events-none text-slate-400 group-hover:text-blue-600 transition-colors z-10">
-                        <i class="fa-solid fa-calendar-day text-[13px]"></i>
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full lg:w-auto mt-2 sm:mt-0">
+                
+                <!-- Nhóm Date Picker & Nút Sync (Ép nằm chung 1 hàng trên mobile) -->
+                <div class="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                    <!-- Chọn ngày cụ thể -->
+                    <div class="relative group flex items-center flex-1 sm:flex-none" title="Chọn ngày xem giao dịch">
+                        <div class="absolute left-3 flex items-center pointer-events-none text-slate-400 group-hover:text-blue-600 transition-colors z-10">
+                            <i class="fa-solid fa-calendar-day text-[13px]"></i>
+                        </div>
+                        <input type="date" id="specific-date-picker" onchange="onSpecificDateChange(this.value)" 
+                               class="pl-8 pr-2 py-2 bg-slate-100 hover:bg-slate-200/80 border border-transparent rounded-xl text-xs font-extrabold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all cursor-pointer shadow-sm w-full sm:w-[135px]">
                     </div>
-                    <!-- Ô Input -->
-                    <input type="date" id="specific-date-picker" onchange="onSpecificDateChange(this.value)" 
-                           class="pl-8 pr-3 py-2 bg-slate-100 hover:bg-slate-200/80 border border-transparent rounded-xl text-xs font-extrabold text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all cursor-pointer shadow-sm w-[135px]">
+
+                    <!-- Google Auth / Sync Header Button -->
+                    <div id="header-auth-btn" class="shrink-0">
+                        <!-- Dynamic -->
+                    </div>
                 </div>
 
-                <!-- Time Filter Pill -->
-                <div class="bg-slate-100 p-1 rounded-2xl flex text-xs font-bold text-slate-600">
-                    <button onclick="setPeriod('day')" id="period-day" class="period-btn px-3.5 py-1.5 rounded-xl transition">Hàng ngày</button>
-                    <button onclick="setPeriod('week')" id="period-week" class="period-btn px-3.5 py-1.5 rounded-xl transition">Hàng tuần</button>
-                    <button onclick="setPeriod('month')" id="period-month" class="period-btn px-3.5 py-1.5 rounded-xl active bg-white text-blue-600 shadow-sm">Hàng tháng</button>
-                    <button onclick="setPeriod('all')" id="period-all" class="period-btn px-3.5 py-1.5 rounded-xl transition">Tất cả</button>
+                <!-- Time Filter Pill (Tự động xuống dòng và cuộn ngang trên màn hình nhỏ) -->
+                <div class="bg-slate-100 p-1 rounded-2xl flex text-[11px] sm:text-xs font-bold text-slate-600 w-full sm:w-auto overflow-x-auto scrollbar-hide">
+                    <button onclick="setPeriod('day')" id="period-day" class="period-btn flex-1 sm:flex-none px-3 sm:px-3.5 py-1.5 rounded-xl transition whitespace-nowrap">Hàng ngày</button>
+                    <button onclick="setPeriod('week')" id="period-week" class="period-btn flex-1 sm:flex-none px-3 sm:px-3.5 py-1.5 rounded-xl transition whitespace-nowrap">Hàng tuần</button>
+                    <button onclick="setPeriod('month')" id="period-month" class="period-btn flex-1 sm:flex-none px-3 sm:px-3.5 py-1.5 rounded-xl active bg-white text-blue-600 shadow-sm whitespace-nowrap">Hàng tháng</button>
+                    <button onclick="setPeriod('all')" id="period-all" class="period-btn flex-1 sm:flex-none px-3 sm:px-3.5 py-1.5 rounded-xl transition whitespace-nowrap">Tất cả</button>
                 </div>
+            </div>
 
                 <!-- Google Auth Header Button -->
                 <div id="header-auth-btn">
@@ -181,8 +207,9 @@
                 <!-- Welcome Banner -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-700">
-                            <span id="dash-username-text" class="text-blue-600">Anh Khoa!, Xin chào bạn</span> 👋
+                        <span id="dash-username-text" class="text-blue-600 font-bold">SpendZone by Anh Khoa!</span>
+                        <h3 class="text-lg font-bold text-slate-700"> Xin Chào bạn 👋
+                            
                         </h3>
                         <p class="text-xs text-slate-400">Dưới đây là tổng quan thu chi tài chính của bạn</p>
                     </div>
